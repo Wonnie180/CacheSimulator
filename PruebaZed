@@ -1,1 +1,15 @@
-FW13 Prueba modificadadfdfd
+import React from 'react';
+
+interface NameDisplayProps {
+  name: string;
+}
+
+const NameDisplay: React.FC<NameDisplayProps> = ({ name }) => {
+  return (
+    <div>
+      {name}
+    </div>
+  );
+};
+
+export default NameDisplay;
