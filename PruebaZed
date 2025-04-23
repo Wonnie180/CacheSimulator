@@ -13,3 +13,11 @@ const NameDisplay: React.FC<NameDisplayProps> = ({ name }) => {
 };
 
 export default NameDisplay;
+
+const asas = () => {
+  return (
+    <div>
+      asas
+    </div>
+  );
+};
