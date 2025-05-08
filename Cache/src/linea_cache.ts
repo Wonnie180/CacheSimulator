@@ -1,4 +1,4 @@
-class LineaCache {
+export default class LineaCache {
     TAG: number;
     antiguedad: number;
     activa: boolean;

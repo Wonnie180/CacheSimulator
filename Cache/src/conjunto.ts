@@ -1,4 +1,6 @@
-class ConjuntoCache {
+import LineaCache from "./linea_cache";
+
+export default class ConjuntoCache {
     id: number;
     lineas: LineaCache[]
 
