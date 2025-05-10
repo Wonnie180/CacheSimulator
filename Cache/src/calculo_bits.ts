@@ -1,4 +1,4 @@
-export function esPotenciaDe2(numero: number): boolean{
+export function esPotenciaDe2(numero: number): boolean {
     return numero != 0 && (numero & (numero - 1)) === 0;
 }
 
@@ -10,59 +10,39 @@ export function obtenerCuantosBitsHayEnNumero(numero: number): number {
 }
 
 
-export function obtenerNumeroBitsParaNConjuntos(numeroConjuntos: number): number{
-    if (numeroConjuntos < 1) return 0;
-    if (numeroConjuntos <= 2) return 1;
-
+export function obtenerNumeroBitsParaNConjuntos(numeroConjuntos: number): number {
+    if (numeroConjuntos <= 1) return 0;
+    if (numeroConjuntos == 2) return 1;
     if (esPotenciaDe2(numeroConjuntos))
         numeroConjuntos--;
 
     return Math.ceil(Math.log2(numeroConjuntos));
-
 }
 
 
+export function calcularBitsLineaYConjunto(tamanoLineas: number, numeroConjuntos: number): { bitMaxLinea: number, bitMaxConjunto: number } {
+    const bits_linea = obtenerNumeroBitsParaNConjuntos(tamanoLineas);
+    const bits_conjunto = obtenerNumeroBitsParaNConjuntos(numeroConjuntos);
 
-export function calcularBitsLineaYConjunto(tamanoLineas: number, numeroConjuntos: number): {bitsLinea: number, bitsConjunto: number} {
-    let bitsLinea = obtenerNumeroBitsParaNConjuntos(tamanoLineas);
+    const bitMaxLinea : number = bits_linea > 0 ? bits_linea - 1 : 0;
+    const bitMaxConjunto : number = bitMaxLinea + bits_conjunto;
 
-    if (bitsLinea > 0)
-        bitsLinea -= 1;
-
-    let bitsConjunto = obtenerNumeroBitsParaNConjuntos(numeroConjuntos) + bitsLinea;
-
-    return {
-        bitsLinea: bitsLinea,
-        bitsConjunto: bitsConjunto
-    };
+    return { bitMaxLinea, bitMaxConjunto };
 }
 
 export function rangoBits(bits: number, bitMenor: number, bitMayor: number, tamanoDireccion: number): number {
-    let bit1 = 1;
-    let bit2 = 1;
-
-    if (bitMenor < 0 || bitMenor > tamanoDireccion - 1) {
+    if (bitMenor < 0 || bitMenor > tamanoDireccion - 1) 
         throw new Error("Error: bitMenor fuera de rango");
-    }
-
-    if (bitMayor < 0 || bitMayor > tamanoDireccion - 1) {
+    
+    if (bitMayor < 0 || bitMayor > tamanoDireccion - 1) 
         throw new Error("Error: bitMayor fuera de rango");
-    }
 
-    if (bitMenor > bitMayor) {
+    if (bitMenor > bitMayor) 
         throw new Error("Error: bitMenor mayor que bitMayor");
-    }
 
-    let valorBitEnRango = bits;
-    const diferenciaRangoBits = bitMayor - bitMenor + 1;
-
-    if (diferenciaRangoBits < tamanoDireccion){
-        bit1 <<= bitMenor;
-        bit2 <<= diferenciaRangoBits;
-
-        valorBitEnRango / bit1;
-        valorBitEnRango = valorBitEnRango % bit2;
-    }
+    let valorBitEnRango = bits >> bitMenor;
+    const mascara = (1 << (bitMayor - bitMenor + 1)) - 1;
+    valorBitEnRango &= mascara;
 
     return valorBitEnRango;
 }

@@ -37,7 +37,7 @@ describe('calculo_bits.ts', () => {
     describe('obtenerNumeroBitsParaNConjuntos', () => {
         test.each([
             [0, 0],
-            [1, 1],
+            [1, 0],
             [2, 1],
             [3, 2],
             [4, 2],
@@ -80,9 +80,9 @@ describe('calculo_bits.ts', () => {
 
     describe('calcularBitsLineaYConjunto', () => {
         test.each([
-            [4, 8, { bitsLinea: 1, bitsConjunto: 4 }],
-            [16, 32, { bitsLinea: 3, bitsConjunto: 8 }],
-            [1, 1, { bitsLinea: 0, bitsConjunto: 1 }],
+            [4, 8, { bitMaxLinea: 1, bitMaxConjunto: 4 }],
+            [16, 32, { bitMaxLinea: 3, bitMaxConjunto: 8 }],
+            [1, 1, { bitMaxLinea: 0, bitMaxConjunto: 0 }],
         ])(
             'para tamanoLineas %d y numeroConjuntos %d debería devolver %o',
             (tamanoLineas, numeroConjuntos, esperado) => {
@@ -94,10 +94,11 @@ describe('calculo_bits.ts', () => {
     describe('rangoBits', () => {
         test.each([
             [0b11111, 0, 3, 32, 0b1111],
-            [0b11111, 4, 7, 32, 0b1111],
-            [0b11111111, 2, 5, 32, 0b1111],
+            [0b11111111, 4, 7, 32, 0b1111],
+            [0b111111, 2, 5, 32, 0b1111],
             [0b1000, 0, 2, 32, 0b00],
-            [0b1010101, 0, 4, 32, 0b10101]
+            [0b1010101, 0, 4, 32, 0b10101],
+            [0b10000111011001010100001100100001, 6, 12, 32, 0b0001100],
         ])(
             'Dado el numero %d, si el rango de bits es de %d a %d con un tamaño de direccion %d debería devolver el valor %d',
             (bits, bitMenor, bitMayor, tamanoDireccion, esperado) => {

@@ -1,4 +1,4 @@
-import { esPotenciaDe2, obtenerNumeroBitsNecesarios, rangoBits } from "./calculo_bits";
+import { calcularBitsLineaYConjunto, esPotenciaDe2, obtenerNumeroBitsParaNConjuntos, rangoBits } from "./calculo_bits";
 import VictimCache from "./victim_cache";
 import ConjuntoCache from "./conjunto";
 
@@ -9,14 +9,14 @@ export default class SimulatedCache {
     hits: number;
     misses: number;
     tamanoLineas: number;
-    victimCache: VictimCache;
+    victimCache: VictimCache | null = null;
 
-    bit_max_linea: number;
-    bit_max_conjunto: number;
+    bitMaxLinea: number;
+    bitMaxConjunto: number;
 
-    constructor(numeroLineas: number, tamanoLineas: number, asociatividad: number, 
-                numeroLineasVC: number, tamanoDireccion: number){
-       
+    constructor(numeroLineas: number, tamanoLineas: number, asociatividad: number,
+        numeroLineasVC: number, tamanoDireccion?: number) {
+
         if (asociatividad < 1) asociatividad = 1;
 
         if (!esPotenciaDe2(numeroLineas))
@@ -30,14 +30,20 @@ export default class SimulatedCache {
 
         this.hits = 0;
         this.misses = 0;
+        this.TAMANO_DIRECCION = tamanoDireccion ? tamanoDireccion : this.TAMANO_DIRECCION;
         this.tamanoLineas = tamanoLineas;
         this.conjuntos = this.GenerarConjuntos(numeroLineas, asociatividad);
-        this.CalcularBitsLineaYConjunto();
+
+        const { bitMaxLinea, bitMaxConjunto } = calcularBitsLineaYConjunto(tamanoLineas, this.conjuntos.length);
+        this.bitMaxLinea = bitMaxLinea;
+        this.bitMaxConjunto = bitMaxConjunto;
+
+
 
         if (numeroLineasVC > 0) {
             if (!esPotenciaDe2(numeroLineasVC))
                 throw new Error("El número de líneas de la VC no es una potencia de 2");
-            
+
             this.victimCache = new VictimCache();
         }
     }
@@ -45,34 +51,42 @@ export default class SimulatedCache {
     ObtenerConjuntoDeDireccion(direccion: number): ConjuntoCache {
         if (this.conjuntos.length === 1) return this.conjuntos[0];
 
-        return this.conjuntos[rangoBits(direccion, this.bit_max_linea+1, this.bit_max_conjunto, this.TAMANO_DIRECCION)];
+        return this.conjuntos[rangoBits(direccion, this.bitMaxLinea + 1, this.bitMaxConjunto, this.TAMANO_DIRECCION)];
     }
 
-    CalcularTAG_VC(TAG: number, idConjunto:number): number {
-        const numeroConjuntos: number = this.conjuntos.length
-        const TAG_VC = (TAG <<= obtenerNumeroBitsNecesarios(numeroConjuntos)) | idConjunto;
+    ObtenerLineaDeDireccion(direccion: number): void {
+        const conjunto = this.ObtenerConjuntoDeDireccion(direccion);
 
-        return TAG_VC; 
+        const bitsMaxTAG = obtenerNumeroBitsParaNConjuntos(direccion);
+        let TAG = 0;
+
+        if (this.conjuntos.length === 1)
+            TAG = TAG = rangoBits(direccion, this.bitMaxLinea + 1, bitsMaxTAG, this.TAMANO_DIRECCION);
+        else if (this.bitMaxConjunto < bitsMaxTAG)
+            TAG = rangoBits(direccion, this.bitMaxConjunto + 1, bitsMaxTAG, this.TAMANO_DIRECCION);
+
+        const linea = conjunto.BuscarLinea(TAG);
+        conjunto.ActualizarAntiguedad();
+
+        if (!linea) {
+            this.misses++;
+            conjunto.LRU(TAG);
+            return;
+        }
+
+        this.hits++;
     }
 
-    private CalcularBitsLineaYConjunto() {
-        this.bit_max_linea = obtenerNumeroBitsNecesarios(this.tamanoLineas);
-        
-        if (this.bit_max_linea > 0)
-            this.bit_max_linea -= 1;
+    private GenerarConjuntos(numeroLineas: number, asociatividad: number): ConjuntoCache[] {
 
-        this.bit_max_conjunto = obtenerNumeroBitsNecesarios(this.conjuntos.length) + this.bit_max_linea;
-    }
-
-    private GenerarConjuntos(numeroLineas:number, asociatividad: number): ConjuntoCache[] {
-        
         const numeroConjuntos: number = numeroLineas / asociatividad;
         const conjuntos: ConjuntoCache[] = [];
 
         for (let i = 0; i < numeroConjuntos; i++) {
-            conjuntos.push(new ConjuntoCache(this.tamanoLineas));
+            conjuntos.push(new ConjuntoCache(i, this.tamanoLineas));
         }
 
         return conjuntos;
     }
+
 } 
