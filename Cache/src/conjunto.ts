@@ -22,27 +22,55 @@ export default class ConjuntoCache {
     }
 
     ObtenerLineaMasAntigua(): LineaCache {
-        return this.lineas.reduce((min, current) =>
-            current.antiguedad < min.antiguedad ? current : min
-        );
+        let lineaMasAntigua = this.lineas[0];
+
+        for (const linea of this.lineas) {
+            if (linea.activa === false) return linea;
+
+            if (linea.antiguedad > lineaMasAntigua.antiguedad)
+                lineaMasAntigua = linea;
+        }
+
+        return lineaMasAntigua;
     }
 
-    LRU(TAG: number) {
+    LRU(TAG: number): LineaCache {
         const linea = this.ObtenerLineaMasAntigua();
 
         linea.TAG = TAG;
         linea.antiguedad = 0;
         linea.activa = true;
+
+        return linea;
     }
 
     BuscarLinea(TAG: number): LineaCache | null {
         const linea = this.lineas.find(linea => linea.TAG === TAG && linea.activa);
-        this.ActualizarAntiguedad();
 
         if (!linea) return null;
 
+        this.ActualizarAntiguedad();
         linea.antiguedad = 0;
+        return linea;
+    }
+
+    SobrescribirLinea(TAG: number, lineaAntigua: LineaCache): LineaCache {
+        const indice = this.lineas.indexOf(lineaAntigua);
+
+        if (indice === -1) 
+            throw new Error("La línea no pertenece a este conjunto");
+
+        const linea = new LineaCache();
+        linea.TAG = TAG;
+        linea.antiguedad = 0;
+        linea.activa = true;
+
+        this.lineas[indice] = linea;
 
         return linea;
+    }
+
+    MostrarContenido(baseNumero: number): string {
+        return this.lineas.map(linea => linea.MostrarContenido(baseNumero)).join("\n");
     }
 }

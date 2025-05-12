@@ -8,4 +8,8 @@ export default class LineaCache {
         this.antiguedad = 0;
         this.activa = false;
     }
+
+    MostrarContenido(baseNumero: number): string {
+        return `TAG: ${this.TAG.toString(baseNumero)}, Antiguedad: ${this.antiguedad}, Activa: ${this.activa}`;
+    }
 }

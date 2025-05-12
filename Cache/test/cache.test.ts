@@ -1,4 +1,5 @@
 import SimulatedCache from '../src/cache';
+import { CalcularTAGCache, CalcularTAGVictimCache } from '../src/calculo_bits';
 
 describe('cache.ts', () => {
     describe('Cache', () => {
@@ -8,6 +9,8 @@ describe('cache.ts', () => {
             { numeroLineas: 4, tamanoLineas: 4, asociatividad: 1, numeroLineasVC: 0 },
             { numeroLineas: 8, tamanoLineas: 8, asociatividad: 1, numeroLineasVC: 0 },
             { numeroLineas: 16, tamanoLineas: 16, asociatividad: 1, numeroLineasVC: 0 },
+            { numeroLineas: 16, tamanoLineas: 16, asociatividad: 1, numeroLineasVC: 1 },
+            { numeroLineas: 16, tamanoLineas: 16, asociatividad: 1, numeroLineasVC: 16 },
         ])('Construye correctamente', ({ numeroLineas, tamanoLineas, asociatividad, numeroLineasVC }) => {
             const cache = new SimulatedCache(numeroLineas, tamanoLineas, asociatividad, numeroLineasVC);
 
@@ -113,6 +116,37 @@ describe('cache.ts', () => {
                 cache.ObtenerLineaDeDireccion(i * tamanoLineas + 1);
 
             expect(cache.misses).toBe(numeroMisses);
+        });
+
+        test('Verifica reemplazo en la victim cache', () => {
+            const numeroLineas = 1;
+            const tamanoLineas = 64;
+            const asociatividad = 1;
+            const numeroLineasVC = 1;
+    
+            const cache = new SimulatedCache(numeroLineas, tamanoLineas, asociatividad, numeroLineasVC, 64);
+    
+            const direccion1 = 0x12345678;
+            const direccion2 = 0x87654321;
+            const direccion3 = 0x57654321;
+
+    
+            expect(cache.ObtenerLineaDeDireccion(direccion1)).toBeNull();
+            expect(cache.ObtenerLineaDeDireccion(direccion2)).toBeNull();
+            expect(cache.ObtenerLineaDeDireccion(direccion1)).not.toBeNull();
+            expect(cache.ObtenerLineaDeDireccion(direccion2)).not.toBeNull();
+
+            expect(cache.hits).toBe(2);
+            expect(cache.misses).toBe(2);
+
+            cache.ObtenerLineaDeDireccion(direccion3);
+
+            expect(cache.hits).toBe(2);
+            expect(cache.misses).toBe(3);
+
+            expect(cache.ObtenerLineaDeDireccion(direccion2)).not.toBeNull();
+            expect(cache.ObtenerLineaDeDireccion(direccion3)).not.toBeNull();
+            expect(cache.ObtenerLineaDeDireccion(direccion1)).toBeNull();
         });
     });
 });

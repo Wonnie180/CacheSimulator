@@ -47,3 +47,21 @@ export function rangoBits(bits: number, bitMenor: number, bitMayor: number, tama
     return valorBitEnRango;
 }
 
+export function CalcularTAGCache(direccion: number, bitMaxLinea: number, bitMaxConjunto: number, numeroConjuntos: number, tamanoDireccion: number): number {
+    const bitsMaxTAG = obtenerNumeroBitsParaNConjuntos(direccion);
+    
+    if (numeroConjuntos === 1) 
+        return rangoBits(direccion, bitMaxLinea + 1, bitsMaxTAG, tamanoDireccion);
+
+    if (bitMaxConjunto >= bitsMaxTAG)
+        return 0;
+
+    return rangoBits(direccion, bitMaxConjunto + 1, bitsMaxTAG, tamanoDireccion)
+}
+
+export function CalcularTAGVictimCache(TAG: number, idConjunto: number, numeroConjuntos: number){
+    const bitsConjunto = obtenerNumeroBitsParaNConjuntos(numeroConjuntos);
+
+    return (TAG << bitsConjunto) | idConjunto;
+}
+
